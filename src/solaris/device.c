@@ -298,13 +298,18 @@ static void close_device(void) {
 
 static bool read_packet(vpn_packet_t *packet) {
 	int inlen;
+	int f = 0;
+	struct strbuf sbuf;
 
 	switch(device_type) {
 		case DEVICE_TYPE_TUN:
-			if((inlen = read(device_fd, packet->data + 14, MTU - 14)) <= 0) {
+			sbuf.maxlen = MTU - 14;
+			sbuf.buf = packet->data + 14;
+			if(getmsg(device_fd, NULL, &sbuf, &f) < 0) {
 				logger(LOG_ERR, "Error while reading from %s %s: %s", device_info, device, strerror(errno));
 				return false;
 			}
+			inlen = sbuf.len;
 
 			switch(packet->data[14] >> 4) {
 				case 4:
@@ -325,10 +330,13 @@ static bool read_packet(vpn_packet_t *packet) {
 			break;
 
 		case DEVICE_TYPE_TAP:
-			if((inlen = read(device_fd, packet->data, MTU)) <= 0) {
+			sbuf.maxlen = MTU;
+			sbuf.buf = packet->data;
+			if(getmsg(device_fd, NULL, &sbuf, &f) < 0) {
 				logger(LOG_ERR, "Error while reading from %s %s: %s", device_info, device, strerror(errno));
 				return false;
 			}
+			inlen = sbuf.len;
 
 			packet->len = inlen + 14;
 			break;
@@ -345,18 +353,24 @@ static bool read_packet(vpn_packet_t *packet) {
 }
 
 static bool write_packet(vpn_packet_t *packet) {
+	struct strbuf sbuf;
+
 	ifdebug(TRAFFIC) logger(LOG_DEBUG, "Writing packet of %d bytes to %s", packet->len, device_info);
 
 	switch(device_type) {
 		case DEVICE_TYPE_TUN:
-			if(write(device_fd, packet->data + 14, packet->len - 14) < 0) {
+			sbuf.len = packet->len - 14;
+			sbuf.buf = packet->data + 14;
+			if(putmsg(device_fd, NULL, &sbuf, 0) < 0) {
 				logger(LOG_ERR, "Can't write to %s %s: %s", device_info, device, strerror(errno));
 				return false;
 			}
 			break;
 
 		case DEVICE_TYPE_TAP:
-			if(write(device_fd, packet->data, packet->len) < 0) {
+			sbuf.len = packet->len;
+			sbuf.buf = packet->data;
+			if(putmsg(device_fd, NULL, &sbuf, 0) < 0) {
 				logger(LOG_ERR, "Can't write to %s %s: %s", device_info, device, strerror(errno));
 				return false;
 			}
