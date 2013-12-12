@@ -338,7 +338,7 @@ static bool read_packet(vpn_packet_t *packet) {
 			}
 			inlen = sbuf.len;
 
-			packet->len = inlen + 14;
+			packet->len = inlen;
 			break;
 
 		default:
