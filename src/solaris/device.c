@@ -25,13 +25,13 @@
 #include <sys/stropts.h>
 #include <sys/sockio.h>
 
-#include "../conf.h"
-#include "../device.h"
-#include "../logger.h"
-#include "../net.h"
-#include "../route.h"
-#include "../utils.h"
-#include "../xalloc.h"
+#include "conf.h"
+#include "device.h"
+#include "logger.h"
+#include "net.h"
+#include "route.h"
+#include "utils.h"
+#include "xalloc.h"
 
 #ifndef TUNNEWPPA
 #warning Missing net/if_tun.h, using hardcoded value for TUNNEWPPA
