@@ -25,6 +25,10 @@
 
 #include "have.h"
 
+#ifdef __sun
+#include <limits.h>
+#endif
+
 #ifndef HAVE_STDBOOL_H
 typedef int bool;
 #define true 1
