@@ -297,7 +297,6 @@ static void close_device(void) {
 }
 
 static bool read_packet(vpn_packet_t *packet) {
-	int inlen;
 	int f = 0;
 	struct strbuf sbuf;
 
@@ -309,7 +308,6 @@ static bool read_packet(vpn_packet_t *packet) {
 				logger(LOG_ERR, "Error while reading from %s %s: %s", device_info, device, strerror(errno));
 				return false;
 			}
-			inlen = sbuf.len;
 
 			switch(packet->data[14] >> 4) {
 				case 4:
@@ -326,7 +324,7 @@ static bool read_packet(vpn_packet_t *packet) {
 			}
 
 			memset(packet->data, 0, 12);
-			packet->len = inlen + 14;
+			packet->len = sbuf.len + 14;
 			break;
 
 		case DEVICE_TYPE_TAP:
@@ -336,9 +334,8 @@ static bool read_packet(vpn_packet_t *packet) {
 				logger(LOG_ERR, "Error while reading from %s %s: %s", device_info, device, strerror(errno));
 				return false;
 			}
-			inlen = sbuf.len;
 
-			packet->len = inlen;
+			packet->len = sbuf.len;
 			break;
 
 		default:
